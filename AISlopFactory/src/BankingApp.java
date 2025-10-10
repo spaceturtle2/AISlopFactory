@@ -7,13 +7,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
 
-/**
- * BankingApp with compact UI + stats panel + pie chart.
- * - Keeps all previous behaviors: interest, debt fee, loans, admin controls, fullscreen.
- * - Shrinked text fields and rearranged controls so UI doesn't feel blown out.
- * - StatsPanel draws a pie chart and textual stats and repaints on data/ UI updates.
- */
+/* IMPORTANT: this BankingApp uses the shared User model.
+   Make sure you created: com.turtlestate.bank.model.User
+   and that it's on the project's classpath.
+*/
+import com.turtlestate.bank.model.User;
+
 public class BankingApp extends JFrame {
 
     // --- Configuration Constants ---
@@ -23,10 +24,6 @@ public class BankingApp extends JFrame {
 
     // DEBT CONSTANT: 0.5% fee charged on negative balances every second
     private static final double DEBT_FEE_RATE = 0.005;
-
-    // Default loan settings (can be changed by admin at runtime)
-    private double globalLoanLimit = 5_000.0;
-    private double globalLoanInterestRate = 0.002; // 0.2% per second (accrued on loanBalance)
 
     // --- Data Storage and Services ---
     private static Map<String, User> accounts = new ConcurrentHashMap<>();
@@ -83,8 +80,12 @@ public class BankingApp extends JFrame {
     // Shared Status Label
     private JLabel bankingStatusLabel;
 
-    // Stats panel (small, right-side)
+    // Stats panel
     private StatsPanel statsPanel;
+
+    // Loan globals (admin adjustable)
+    private double globalLoanLimit = 5_000.0;
+    private double globalLoanInterestRate = 0.002; // per-second
 
     public BankingApp() {
         super("Gemini Bank - Secure Console");
@@ -106,11 +107,13 @@ public class BankingApp extends JFrame {
         JPanel authPanel = createAuthPanel();
         JPanel bankingPanel = createBankingPanel();
 
-        // 4. Add Panels to CardLayout
+        // 4. Add Panels to CardLayout container
         mainPanel.add(authPanel, "AUTH");
         mainPanel.add(bankingPanel, "BANKING");
 
-        add(mainPanel);
+        // Add mainPanel to content pane
+        getContentPane().setLayout(new BorderLayout());
+        getContentPane().add(mainPanel, BorderLayout.CENTER);
 
         // Show the initial view
         cardLayout.show(mainPanel, "AUTH");
@@ -135,13 +138,13 @@ public class BankingApp extends JFrame {
         c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.EAST;
         inputPanel.add(new JLabel("Username:"), c);
         c.gridx = 1; c.anchor = GridBagConstraints.WEST;
-        authUsernameField = new JTextField(12); // smaller
+        authUsernameField = new JTextField(12);
         inputPanel.add(authUsernameField, c);
 
         c.gridx = 0; c.gridy = 1; c.anchor = GridBagConstraints.EAST;
         inputPanel.add(new JLabel("Password:"), c);
         c.gridx = 1; c.anchor = GridBagConstraints.WEST;
-        authPasswordField = new JPasswordField(12); // smaller
+        authPasswordField = new JPasswordField(12);
         inputPanel.add(authPasswordField, c);
 
         c.gridx = 0; c.gridy = 2; c.gridwidth = 2;
@@ -399,12 +402,12 @@ public class BankingApp extends JFrame {
 
         // --- ADMIN LOGIN CHECK ---
         if (username.equals(ADMIN_USER) && password.equals(ADMIN_PASS)) {
+            // Placeholder User object for admin session (shared User)
             loggedInUser = new User(ADMIN_USER, ADMIN_PASS);
-            updateUserList();
-            toggleAdminFeatures(true);
+            updateUserList(); // Populate the list immediately
+            toggleAdminFeatures(true); // Switch to admin view
             cardLayout.show(mainPanel, "BANKING");
             authStatusLabel.setText("Admin Login successful! View and manage accounts.");
-            authStatusLabel.setForeground(Color.BLUE);
             authPasswordField.setText("");
             return;
         }
@@ -414,7 +417,7 @@ public class BankingApp extends JFrame {
         if (user != null && user.getPassword().equals(password)) {
             loggedInUser = user;
             updateBankingUI();
-            toggleAdminFeatures(false);
+            toggleAdminFeatures(false); // Switch to regular user view
             cardLayout.show(mainPanel, "BANKING");
             authStatusLabel.setText("Login successful!");
             authStatusLabel.setForeground(Color.BLUE);
@@ -422,6 +425,7 @@ public class BankingApp extends JFrame {
             authStatusLabel.setText("Login failed: Invalid username or password.");
             authStatusLabel.setForeground(Color.RED);
         }
+        // Clear password field after attempt
         authPasswordField.setText("");
     }
 
@@ -448,6 +452,8 @@ public class BankingApp extends JFrame {
         }
 
         User newUser = new User(username, password);
+        // ensure portfolio map exists
+        newUser.getPortfolio();
         accounts.put(username, newUser);
         loggedInUser = newUser;
         saveData();
@@ -458,16 +464,16 @@ public class BankingApp extends JFrame {
         authStatusLabel.setText("Account created and logged in!");
         authStatusLabel.setForeground(Color.BLUE);
 
+        // Clear fields
         authUsernameField.setText("");
         authPasswordField.setText("");
-        // update stats
         statsPanel.repaint();
     }
 
     // --- Banking Logic ---
 
     private void deposit() {
-        if (loggedInUser == null || loggedInUser.getUsername().equals(ADMIN_USER)) return;
+        if (loggedInUser == null || ADMIN_USER.equals(loggedInUser.getUsername())) return;
 
         try {
             double amount = Double.parseDouble(transactionField.getText());
@@ -498,7 +504,7 @@ public class BankingApp extends JFrame {
     }
 
     private void withdraw() {
-        if (loggedInUser == null || loggedInUser.getUsername().equals(ADMIN_USER)) return;
+        if (loggedInUser == null || ADMIN_USER.equals(loggedInUser.getUsername())) return;
 
         try {
             double amount = Double.parseDouble(transactionField.getText());
@@ -536,7 +542,7 @@ public class BankingApp extends JFrame {
 
     /** User-to-User fund transfer */
     private void userTransfer() {
-        if (loggedInUser == null || loggedInUser.getUsername().equals(ADMIN_USER)) return;
+        if (loggedInUser == null || ADMIN_USER.equals(loggedInUser.getUsername())) return;
 
         String recipient = userTransferRecipientField.getText().trim();
         String amountText = userTransferAmountField.getText().trim();
@@ -603,7 +609,7 @@ public class BankingApp extends JFrame {
     // --- Loan Features (User) ---
 
     private void requestLoan() {
-        if (loggedInUser == null || loggedInUser.getUsername().equals(ADMIN_USER)) {
+        if (loggedInUser == null || ADMIN_USER.equals(loggedInUser.getUsername())) {
             bankingStatusLabel.setText("Loan requests are for regular users only.");
             bankingStatusLabel.setForeground(Color.RED);
             return;
@@ -647,7 +653,7 @@ public class BankingApp extends JFrame {
     }
 
     private void repayLoan() {
-        if (loggedInUser == null || loggedInUser.getUsername().equals(ADMIN_USER)) {
+        if (loggedInUser == null || ADMIN_USER.equals(loggedInUser.getUsername())) {
             bankingStatusLabel.setText("Loan repayment is for regular users only.");
             bankingStatusLabel.setForeground(Color.RED);
             return;
@@ -692,7 +698,7 @@ public class BankingApp extends JFrame {
     // --- Admin Logic ---
 
     private void adminGrantTransfer() {
-        if (loggedInUser == null || !loggedInUser.getUsername().equals(ADMIN_USER)) {
+        if (loggedInUser == null || !ADMIN_USER.equals(loggedInUser.getUsername())) {
             bankingStatusLabel.setText("ERROR: Must be logged in as Admin.");
             bankingStatusLabel.setForeground(Color.RED);
             return;
@@ -754,7 +760,7 @@ public class BankingApp extends JFrame {
     }
 
     private void resetSelectedBalance() {
-        if (loggedInUser == null || !loggedInUser.getUsername().equals(ADMIN_USER)) {
+        if (loggedInUser == null || !ADMIN_USER.equals(loggedInUser.getUsername())) {
             bankingStatusLabel.setText("ERROR: Must be logged in as Admin to reset.");
             bankingStatusLabel.setForeground(Color.RED);
             return;
@@ -792,7 +798,7 @@ public class BankingApp extends JFrame {
     }
 
     private void applyLoanSettings() {
-        if (loggedInUser == null || !loggedInUser.getUsername().equals(ADMIN_USER)) {
+        if (loggedInUser == null || !ADMIN_USER.equals(loggedInUser.getUsername())) {
             bankingStatusLabel.setText("ERROR: Must be logged in as Admin to change loan settings.");
             bankingStatusLabel.setForeground(Color.RED);
             return;
@@ -828,7 +834,7 @@ public class BankingApp extends JFrame {
     }
 
     private void forgiveSelectedUserLoan() {
-        if (loggedInUser == null || !loggedInUser.getUsername().equals(ADMIN_USER)) {
+        if (loggedInUser == null || !ADMIN_USER.equals(loggedInUser.getUsername())) {
             bankingStatusLabel.setText("ERROR: Must be logged in as Admin to forgive loans.");
             bankingStatusLabel.setForeground(Color.RED);
             return;
@@ -904,7 +910,7 @@ public class BankingApp extends JFrame {
 
     /** Populates the JList with current user accounts and balances (Admin only) */
     private void updateUserList() {
-        if (loggedInUser == null || !loggedInUser.getUsername().equals(ADMIN_USER)) return;
+        if (loggedInUser == null || !ADMIN_USER.equals(loggedInUser.getUsername())) return;
 
         int selectedIndex = userList.getSelectedIndex();
         listModel.clear();
@@ -937,7 +943,7 @@ public class BankingApp extends JFrame {
 
     private void updateBankingUI() {
         if (loggedInUser != null) {
-            if (loggedInUser.getUsername().equals(ADMIN_USER)) return;
+            if (ADMIN_USER.equals(loggedInUser.getUsername())) return;
 
             welcomeLabel.setText("Welcome, " + loggedInUser.getUsername() + "!");
             balanceLabel.setText(String.format("Balance: $%.2f", loggedInUser.getBalance()));
@@ -977,13 +983,12 @@ public class BankingApp extends JFrame {
             if (dataChanged) saveData();
 
             if (loggedInUser != null) {
-                if (!loggedInUser.getUsername().equals(ADMIN_USER)) {
+                if (!ADMIN_USER.equals(loggedInUser.getUsername())) {
                     SwingUtilities.invokeLater(this::updateBankingUI);
                 } else {
                     SwingUtilities.invokeLater(this::updateUserList);
                 }
             } else {
-                // no user logged in, still repaint stats
                 SwingUtilities.invokeLater(statsPanel::repaint);
             }
         };
@@ -1009,19 +1014,187 @@ public class BankingApp extends JFrame {
         }
     }
 
+    /**
+     * Robust loadData: reads the file, which should contain a Map<String,User>.
+     * If values are not instances of the shared User (e.g. old inner-class objects),
+     * it will try to extract fields via reflection and create shared User instances.
+     */
     @SuppressWarnings("unchecked")
     private void loadData() {
         File file = new File(DATA_FILE);
-        if (file.exists()) {
-            try (FileInputStream fis = new FileInputStream(file);
-                 ObjectInputStream ois = new ObjectInputStream(fis)) {
-                accounts = (Map<String, User>) ois.readObject();
-                System.out.println("Data loaded successfully from " + DATA_FILE);
-            } catch (IOException | ClassNotFoundException e) {
-                System.err.println("Error loading data. Starting fresh. " + e.getMessage());
+        if (!file.exists()) {
+            System.out.println("No existing data found. Starting with a fresh slate.");
+            accounts = new ConcurrentHashMap<>();
+            return;
+        }
+
+        // backup
+        try {
+            File backup = new File(DATA_FILE + ".bak");
+            if (!backup.exists()) {
+                java.nio.file.Files.copy(file.toPath(), backup.toPath());
+                System.out.println("Backup created: " + backup.getName());
             }
-        } else {
-            System.out.println("No existing data found. Starting fresh.");
+        } catch (Exception ex) {
+            System.err.println("Warning: could not create backup: " + ex.getMessage());
+        }
+
+        try (FileInputStream fis = new FileInputStream(file);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+
+            Object rawObj = ois.readObject();
+            if (!(rawObj instanceof Map)) {
+                System.err.println("Unexpected data in " + DATA_FILE + " — not a Map. Starting fresh.");
+                accounts = new ConcurrentHashMap<>();
+                return;
+            }
+
+            Map<?, ?> rawMap = (Map<?, ?>) rawObj;
+            Map<String, User> rebuilt = new ConcurrentHashMap<>();
+
+            for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                Object k = entry.getKey();
+                Object v = entry.getValue();
+                if (!(k instanceof String)) continue;
+                String usernameKey = (String) k;
+
+                if (v == null) {
+                    User u = new User(usernameKey, "");
+                    u.setBalance(0.0);
+                    u.setLoanBalance(0.0);
+                    rebuilt.put(usernameKey, u);
+                    continue;
+                }
+
+                // If it's already the shared User class, use it directly
+                if (v instanceof User) {
+                    User existing = (User) v;
+                    // ensure portfolio map exists
+                    existing.getPortfolio();
+                    rebuilt.put(existing.getUsername(), existing);
+                    continue;
+                }
+
+                // Otherwise convert via reflection
+                String uname = null;
+                String pass = "";
+                double balance = 0.0;
+                double loan = 0.0;
+                Map<String, Integer> portfolio = null;
+
+                Class<?> cls = v.getClass();
+
+                // Try getters
+                try {
+                    try {
+                        java.lang.reflect.Method m = cls.getMethod("getUsername");
+                        Object r = m.invoke(v);
+                        if (r != null) uname = r.toString();
+                    } catch (NoSuchMethodException ignored) {}
+                    try {
+                        java.lang.reflect.Method m = cls.getMethod("getPassword");
+                        Object r = m.invoke(v);
+                        if (r != null) pass = r.toString();
+                    } catch (NoSuchMethodException ignored) {}
+                    try {
+                        java.lang.reflect.Method m = cls.getMethod("getBalance");
+                        Object r = m.invoke(v);
+                        if (r instanceof Number) balance = ((Number) r).doubleValue();
+                    } catch (NoSuchMethodException ignored) {}
+                    try {
+                        java.lang.reflect.Method m = cls.getMethod("getLoanBalance");
+                        Object r = m.invoke(v);
+                        if (r instanceof Number) loan = ((Number) r).doubleValue();
+                    } catch (NoSuchMethodException ignored) {}
+                    try {
+                        java.lang.reflect.Method m = cls.getMethod("getPortfolio");
+                        Object r = m.invoke(v);
+                        if (r instanceof Map) {
+                            portfolio = new HashMap<>();
+                            for (Object pe : ((Map) r).entrySet()) {
+                                Map.Entry<?,?> ent = (Map.Entry<?,?>) pe;
+                                Object pk = ent.getKey();
+                                Object pv = ent.getValue();
+                                if (pk != null && pv instanceof Number) {
+                                    portfolio.put(pk.toString(), ((Number) pv).intValue());
+                                } else if (pk != null && pv != null) {
+                                    try {
+                                        int iv = Integer.parseInt(pv.toString());
+                                        portfolio.put(pk.toString(), iv);
+                                    } catch (Exception ignore) {}
+                                }
+                            }
+                        }
+                    } catch (NoSuchMethodException ignored) {}
+                } catch (Exception ignored) {}
+
+                // Try fields if getters not present
+                if (uname == null) {
+                    try {
+                        java.lang.reflect.Field fuser = cls.getDeclaredField("username");
+                        fuser.setAccessible(true);
+                        Object ru = fuser.get(v);
+                        if (ru != null) uname = ru.toString();
+                    } catch (Exception ignored) {}
+                }
+                if ("".equals(pass)) {
+                    try {
+                        java.lang.reflect.Field fpass = cls.getDeclaredField("password");
+                        fpass.setAccessible(true);
+                        Object rp = fpass.get(v);
+                        if (rp != null) pass = rp.toString();
+                    } catch (Exception ignored) {}
+                }
+                try {
+                    java.lang.reflect.Field fbal = cls.getDeclaredField("balance");
+                    fbal.setAccessible(true);
+                    Object rb = fbal.get(v);
+                    if (rb instanceof Number) balance = ((Number) rb).doubleValue();
+                } catch (Exception ignored) {}
+                try {
+                    java.lang.reflect.Field floan = cls.getDeclaredField("loanBalance");
+                    floan.setAccessible(true);
+                    Object rl = floan.get(v);
+                    if (rl instanceof Number) loan = ((Number) rl).doubleValue();
+                } catch (Exception ignored) {}
+                try {
+                    java.lang.reflect.Field fport = cls.getDeclaredField("portfolio");
+                    fport.setAccessible(true);
+                    Object rp = fport.get(v);
+                    if (rp instanceof Map) {
+                        portfolio = new HashMap<>();
+                        for (Object pe : ((Map) rp).entrySet()) {
+                            Map.Entry<?,?> ent = (Map.Entry<?,?>) pe;
+                            Object pk = ent.getKey();
+                            Object pv = ent.getValue();
+                            if (pk != null && pv instanceof Number) {
+                                portfolio.put(pk.toString(), ((Number) pv).intValue());
+                            } else if (pk != null && pv != null) {
+                                try {
+                                    int iv = Integer.parseInt(pv.toString());
+                                    portfolio.put(pk.toString(), iv);
+                                } catch (Exception ignore) {}
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+
+                if (uname == null) uname = usernameKey;
+
+                User newUser = new User(uname, pass == null ? "" : pass);
+                newUser.setBalance(balance);
+                newUser.setLoanBalance(loan);
+                if (portfolio != null) newUser.setPortfolio(portfolio);
+                newUser.getPortfolio(); // ensure non-null
+                rebuilt.put(newUser.getUsername(), newUser);
+            }
+
+            accounts = new ConcurrentHashMap<>(rebuilt);
+            System.out.println("Data loaded and converted from " + DATA_FILE);
+
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading data. Starting fresh. " + e.getMessage());
+            accounts = new ConcurrentHashMap<>();
         }
     }
 
@@ -1122,82 +1295,10 @@ public class BankingApp extends JFrame {
 
     // --- Main Method ---
     public static void main(String[] args) {
+        // Start the GUI on the Event Dispatch Thread (EDT)
         SwingUtilities.invokeLater(() -> {
             BankingApp app = new BankingApp();
             app.setVisible(true);
         });
-    }
-
-    // --- User Class ---
-
-    private static class User implements Serializable {
-        private static final long serialVersionUID = 3L;
-        private String username;
-        private String password;
-        private double balance;
-        private double loanBalance;
-
-        public User(String username, String password) {
-            this.username = username;
-            this.password = password;
-            this.balance = 0.0;
-            this.loanBalance = 0.0;
-        }
-
-        public String getUsername() { return username; }
-        public String getPassword() { return password; }
-        public double getBalance() { return balance; }
-        public double getLoanBalance() { return loanBalance; }
-        public void setLoanBalance(double loanBalance) { this.loanBalance = loanBalance; }
-        public void setBalance(double balance) { this.balance = balance; }
-
-        public void deposit(double amount) {
-            if (amount > 0) this.balance += amount;
-        }
-
-        public boolean withdraw(double amount) {
-            if (amount > 0) {
-                this.balance -= amount;
-                return true;
-            }
-            return false;
-        }
-
-        public synchronized void addInterest(double rate) {
-            if (this.balance > 0) {
-                double interest = this.balance * rate;
-                this.balance += interest;
-            }
-        }
-
-        public synchronized void chargeDebtFee(double rate) {
-            if (this.balance < 0) {
-                double debtMagnitude = Math.abs(this.balance);
-                double fee = debtMagnitude * rate;
-                this.balance -= fee;
-            }
-        }
-
-        public synchronized void requestLoan(double amount) {
-            if (amount > 0) {
-                this.loanBalance += amount;
-                this.balance += amount;
-            }
-        }
-
-        public synchronized double repayLoan(double amount) {
-            if (amount <= 0) return 0.0;
-            double amountToApply = Math.min(amount, this.loanBalance);
-            this.loanBalance -= amountToApply;
-            this.balance -= amountToApply;
-            return amountToApply;
-        }
-
-        public synchronized void accrueLoanInterest(double rate) {
-            if (this.loanBalance > 0) {
-                double interest = this.loanBalance * rate;
-                this.loanBalance += interest;
-            }
-        }
     }
 }

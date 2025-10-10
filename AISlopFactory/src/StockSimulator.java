@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
+import com.turtlestate.bank.model.User;
 
 /**
  * Stock Investing Simulator that re-uses the banking_data.dat file and the same User structure.
@@ -633,93 +634,4 @@ public class StockSimulator extends JFrame {
 
     // --- User class compatible with BankingApp's User ---
     // serialVersionUID kept as 3L to match the BankingApp code you used previously.
-    private static class User implements Serializable {
-        private static final long serialVersionUID = 3L;
-        private String username;
-        private String password;
-        private double balance;
-        private double loanBalance;
-        // NEW field: portfolio (ticker -> shares). Older saved objects will load and portfolio will be null; we initialize it.
-        private Map<String,Integer> portfolio;
-
-        public User(String username, String password) {
-            this.username = username;
-            this.password = password;
-            this.balance = 0.0;
-            this.loanBalance = 0.0;
-            this.portfolio = new HashMap<>();
-        }
-
-        public void initPortfolio() {
-            if (portfolio == null) portfolio = new HashMap<>();
-        }
-
-        public Map<String,Integer> getPortfolio() {
-            if (portfolio == null) portfolio = new HashMap<>();
-            return portfolio;
-        }
-
-        public int getPortfolioQuantity(String ticker) {
-            if (portfolio == null) return 0;
-            return portfolio.getOrDefault(ticker, 0);
-        }
-
-        public void addToPortfolio(String ticker, int qty) {
-            if (portfolio == null) portfolio = new HashMap<>();
-            portfolio.put(ticker, portfolio.getOrDefault(ticker, 0) + qty);
-        }
-
-        public void removeFromPortfolio(String ticker, int qty) {
-            if (portfolio == null) portfolio = new HashMap<>();
-            int have = portfolio.getOrDefault(ticker, 0);
-            int remain = Math.max(0, have - qty);
-            if (remain == 0) portfolio.remove(ticker);
-            else portfolio.put(ticker, remain);
-        }
-
-        // banking-related methods kept similar to BankingApp for compatibility
-        public String getUsername() { return username; }
-        public String getPassword() { return password; }
-        public double getBalance() { return balance; }
-        public double getLoanBalance() { return loanBalance; }
-
-        public void setBalance(double b) { this.balance = b; }
-        public void setLoanBalance(double l) { this.loanBalance = l; }
-
-        public synchronized void deposit(double amount) {
-            if (amount > 0 && Double.isFinite(amount)) this.balance += amount;
-        }
-
-        public synchronized boolean withdraw(double amount) {
-            if (amount > 0 && Double.isFinite(amount)) {
-                this.balance -= amount;
-                return true;
-            }
-            return false;
-        }
-
-        // interest/fee methods (kept for compatibility)
-        public synchronized void addInterest(double rate) {
-            if (balance > 0) balance += balance * rate;
-        }
-        public synchronized void chargeDebtFee(double rate) {
-            if (balance < 0) {
-                double fee = Math.abs(balance) * rate;
-                balance -= fee;
-            }
-        }
-        public synchronized void requestLoan(double amount) {
-            if (amount > 0) { loanBalance += amount; balance += amount; }
-        }
-        public synchronized double repayLoan(double amount) {
-            if (amount <= 0) return 0.0;
-            double toApply = Math.min(amount, loanBalance);
-            loanBalance -= toApply;
-            balance -= toApply;
-            return toApply;
-        }
-        public synchronized void accrueLoanInterest(double rate) {
-            if (loanBalance > 0) loanBalance += loanBalance * rate;
-        }
-    }
-}
+   }
