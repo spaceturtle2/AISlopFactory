@@ -1,7 +1,0 @@
-# Add your websites here (one per line)
-# Lines starting with # are comments
-https://www.google.com
-https://www.github.com
-https://www.stackoverflow.com
-https://www.youtube.com
-https://www.wikipedia.org
