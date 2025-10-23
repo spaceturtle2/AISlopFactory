@@ -1,0 +1,25 @@
+{
+  "generatedAt": "Thu Oct 23 10:37:19 EDT 2025",
+  "users": [
+    {
+      "username": "alice",
+      "passwordHash": "cPcgNZu4eX5cGSWrWo8wuhw6dOhfA0V/6ug4sfaENH8=",
+      "passwordSalt": "Zr8UjbJ/PiaZNq5XZotWeg==",
+      "balance": 150.0,
+      "loanBalance": 0.0,
+      "portfolio": {
+        "TURTLE": 5
+      }
+    },
+    {
+      "username": "bob",
+      "passwordHash": "ZG7J4olocwv+wSLDF89GEnbxK47Zpy+cK+etUKFMyrU=",
+      "passwordSalt": "mWcnS71QHseu3Nms4VJSqg==",
+      "balance": 50.0,
+      "loanBalance": 0.0,
+      "portfolio": {
+        "SLOP": 2
+      }
+    }
+  ]
+}
