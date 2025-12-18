@@ -50,4 +50,7 @@ public class Worker {
     public int getId() {
         return this.id;
     }
+    public double getPay() {
+    	return this.pay;
+    }
 }
