@@ -38,7 +38,7 @@ public class BBB {
 		String command = scan.nextLine();
 		System.out.println(command);
 		if (command.substring(0,3).equals("hire")) {
-			company.hire(command.substring(4,5), command.substring(6,command.length()));ß
+			company.hire(command.substring(4,5), command.substring(6,command.length()));
 			System.out.println(company.temp.getPay());
 		}
 		if (command.substring(0,2).equals("job")) {
