@@ -37,16 +37,40 @@ public class VirtualPet
   }
 public void feed() 
 {
-	if (this.energy <= 9) {
+	if (this.energy < MAXIMUM_LEVEL) {
 	this.energy += 1;
-	}
 	this.weight += 1;
+	}
 }
 public int getEnergyLevel() {
 	return this.energy;
 }
 public int getHappinessLevel() {
 	return this.happiness;
+}
+
+
+public void play() {
+if (this.weight > MINIMUM_WEIGHT && this.happiness < MAXIMUM_LEVEL) {
+	this.happiness += 1;
+	this.weight -= 1;
+}
+}
+
+public void updateStatus() {
+	if (this.happiness > 0) {
+		this.happiness -= 1;
+	}
+	if (this.energy > 0) {
+		this.energy -= 1;
+	}
+	if (months < 11) {
+		months += 1;
+	}
+	else if (months == 11) {
+		months = 0;
+		ageInYears += 1;
+	}
 }
 
 }
