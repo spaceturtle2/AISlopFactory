@@ -61,10 +61,9 @@ public class VirtualPetRunner
         System.out.println(myPet);
       }
       else if (choice == 2)
-      {   /* remove comment for part B
+      {   
         myPet.feed();
         System.out.println("\n\nYou have fed " + myPet.getName());
-      */
       }
       else if (choice == 3)
       {   /* remove comment for part C
@@ -72,7 +71,7 @@ public class VirtualPetRunner
         System.out.println("\n\nYou have played with " + myPet.getName());
         */                     
        }
-       /* remove comment for part B
+
        if (myPet.getEnergyLevel() >= 5  && myPet.getHappinessLevel() >= 5)
        {
          printPet("ᵕ");
@@ -81,7 +80,6 @@ public class VirtualPetRunner
        {
          printPet("ᵔ");
        }
-       */
            
        System.out.println(myPet.getName().toUpperCase());
        choice = getChoice(input);
