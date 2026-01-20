@@ -35,11 +35,12 @@ public class VirtualPet
                     + happiness + "\nWeight: " + weight + " g\nAge: " 
                     + months + " months and " + ageInYears + " years";    
   }
-public void feed() 
+public void feed(Food f) 
 {
 	if (this.energy < MAXIMUM_LEVEL) {
-	this.energy += 1;
-	this.weight += 1;
+	this.energy += f.getEnergyIncrease();
+	this.weight += f.getWeightGain();
+	this.happiness += f.getHapinessIncrease();
 	}
 }
 public int getEnergyLevel() {
@@ -50,11 +51,12 @@ public int getHappinessLevel() {
 }
 
 
-public void play() {
-if (this.weight > MINIMUM_WEIGHT && this.happiness < MAXIMUM_LEVEL) {
-	this.happiness += 1;
-	this.weight -= 1;
+public boolean play(Game g) {
+if (this.weight > MINIMUM_WEIGHT && this.happiness < MAXIMUM_LEVEL && g.isWinner() == true) {
+	this.happiness += g.getHapinessIncrease();
+	this.weight -= g.getWeightDecrease();
 }
+return g.isWinner();
 }
 
 public void updateStatus() {

@@ -70,7 +70,6 @@ public class VirtualPetRunner
         // CHANGE THIS VARIABLE VALUE TO TEST AT A DIFFERENT SPEED
         final int INTERVAL_IN_SECONDS = 10;
         
-        // Sets up Scanner for user input
         Scanner input = new Scanner(System.in);
         
         VirtualPet myPet = new VirtualPet("Coco");
