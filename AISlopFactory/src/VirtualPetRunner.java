@@ -99,8 +99,12 @@ public class VirtualPetRunner
         while (choice != 4)
         {
             if(myPet.getHappinessLevel() == 0) {
-            	System.out.println("Pet is sad :( Make it happy... Or else");
               	System.out.println(" ");
+            	System.out.println("Pet is sad :( Make it happy... Or else");
+
+            }
+            if (myPet.checkcure() == true) {
+            	System.out.println("Pet is sick.... hmmmm....");
             }
             if(myPet.getEnergyLevel() == 0) {
             	System.out.println("Pet is eepy...maybe they are going to tactical skip school");
