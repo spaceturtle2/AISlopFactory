@@ -1,4 +1,3 @@
-
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,7 +38,6 @@ public class VirtualPetRunner
         selection = input.nextInt();
       }
       return selection;
-
     }
     
      // Prints out game options and returns user choice
@@ -58,12 +56,34 @@ public class VirtualPetRunner
       return selection;
     }
     
-   // Displays a picture of the pet
-    public static void printPet(String emo)
+   // Displays a picture of the pet - updated to show black hole when weight is negative
+    public static void printPet(String emo, VirtualPet pet)
     {
-        System.out.println(" /\\_/\\");  
-        System.out.println("( o.o )"); 
-        System.out.println(" > " + emo + " <");
+        // Check if weight is negative
+        if (pet.getWeight() < 0) {
+        	System.out.println("            ......");
+        	System.out.println("         .::::::::::.");
+        	System.out.println("       .::.        .::.");
+        	System.out.println("     .::.            .::.");
+        	System.out.println("    ::                  ::");
+        	System.out.println("   :                      :");
+        	System.out.println("  :      ╔═══════════╗     :");
+        	System.out.println(" :       ║●●BLACK●●║      :");
+        	System.out.println(":        ║●●HOLE ●●║       :");
+        	System.out.println(":        ║ Weight:" + String.format("%4d", pet.getWeight()) + "║       :");
+        	System.out.println(" :       ╚═══════════╝      :");
+        	System.out.println("  :                        :");
+        	System.out.println("   :      ↻ ↺ ↻ ↺ ↻      :");
+        	System.out.println("    ::                  ::");
+        	System.out.println("     '::.            .::'");
+        	System.out.println("       '::.        .::'");
+        	System.out.println("         '::::::::::'");
+        	System.out.println("            ''''''");
+        } else {
+            System.out.println(" /\\_/\\");  
+            System.out.println("( o.o )"); 
+            System.out.println(" > " + emo + " <");
+        }
     }
     
     public static void main(String[] args) 
@@ -90,10 +110,12 @@ public class VirtualPetRunner
         // Sets up a ScheduledExecutorService object that will call updateStatus
         // every 1 minute.
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(() -> { myPet.updateStatus(); }, 0, INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> { 
+            myPet.updateStatus(); 
+        }, 0, INTERVAL_IN_SECONDS, TimeUnit.SECONDS);
         
         System.out.println(myPet);
-        printPet("ᵔ");
+        printPet("ᵔ", myPet);
 
         int choice = getChoice(input);        
         while (choice != 4)
@@ -101,7 +123,6 @@ public class VirtualPetRunner
             if(myPet.getHappinessLevel() == 0) {
               	System.out.println(" ");
             	System.out.println("Pet is sad :( Make it happy... Or else");
-
             }
             if (myPet.checkcure() == true) {
             	System.out.println("Pet is sick.... hmmmm....");
@@ -109,6 +130,12 @@ public class VirtualPetRunner
             if(myPet.getEnergyLevel() == 0) {
             	System.out.println("Pet is eepy...maybe they are going to tactical skip school");
               	System.out.println(" ");
+            }
+            
+            // Check if weight is negative and warn the user
+            if (myPet.getWeight() < 0) {
+                System.out.println("\n⚠️  WARNING: Pet weight is negative! Pet has become a black hole! ⚠️");
+                System.out.println("The pet is collapsing under its own negative mass!");
             }
         	
         	if(choice == 1)
@@ -137,6 +164,11 @@ public class VirtualPetRunner
                   myPet.feed(f);
                   System.out.println("\n\nYou have fed " + myPet.getName() 
                                         + " 1 " + f.getName());
+                  
+                  // Check for weight going negative after feeding
+                  if (myPet.getWeight() < 0) {
+                      System.out.println("The food caused " + myPet.getName() + "'s weight to go negative!");
+                  }
                 }
             }
             else if (choice == 3)
@@ -159,12 +191,20 @@ public class VirtualPetRunner
                      System.out.println(myPet.getName() + " has won!");
                   else
                      System.out.println(myPet.getName() + " has lost!");
+                  
+                  // Check for weight going negative after playing
+                  if (myPet.getWeight() < 0) {
+                      System.out.println("The game caused " + myPet.getName() + "'s weight to go negative!");
+                  }
                 }
             }
+            
+            // Updated printPet calls to pass the pet object
             if (myPet.getEnergyLevel() >= 5  && myPet.getHappinessLevel() >= 5)
-                printPet("ᵕ");
+                printPet("ᵕ", myPet);
             else
-                printPet("ᵔ");
+                printPet("ᵔ", myPet);
+                
             System.out.println(myPet.getName().toUpperCase());
             choice = getChoice(input);
         }
