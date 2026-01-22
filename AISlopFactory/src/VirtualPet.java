@@ -62,7 +62,7 @@ return g.isWinner();
 }
 
 public void updateStatus() {
-	if ((int) Math.random() * 100 + 1 > 80) sick = true; else sick = false;
+	if ((int) Math.random() * 100 + 1 > 80) this.sick = true; else this.sick = false;
 	if (this.happiness > 0) {
 		this.happiness -= 1;
 	}
@@ -80,6 +80,11 @@ public void updateStatus() {
 public void cure() {
 	this.sick = false;
 }
-
+public boolean checksick() {
+	if (this.sick == true) {
+		return true;
+	}
+	return false;
+}
 
 }
