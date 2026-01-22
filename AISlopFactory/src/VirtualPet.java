@@ -3,6 +3,7 @@ public class VirtualPet
   // Instance Variables
   private int energy, happiness, weight, ageInYears, months;
   private String name;
+  private boolean sick;
     
   // Constant Variables
   private static final int MINIMUM_WEIGHT = 5;
@@ -17,6 +18,7 @@ public class VirtualPet
     weight = MINIMUM_WEIGHT;
     months = 0; 
     ageInYears = 0;
+    sick = false;
   }
     
   // Accessor Method   
@@ -60,6 +62,7 @@ return g.isWinner();
 }
 
 public void updateStatus() {
+	if ((int) Math.random() * 100 + 1 > 80) sick = true; else sick = false;
 	if (this.happiness > 0) {
 		this.happiness -= 1;
 	}
@@ -74,5 +77,9 @@ public void updateStatus() {
 		ageInYears += 1;
 	}
 }
+public void cure() {
+	this.sick = false;
+}
+
 
 }
