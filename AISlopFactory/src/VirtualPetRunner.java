@@ -34,7 +34,8 @@ public class VirtualPetRunner
         System.out.println("2. Cupcake" );
         System.out.println("3. Broccoli" );
         System.out.println("4. Potato");
-        System.out.println("5. Return to Menu" );
+        System.out.println("5. Meds" );
+        System.out.println("6. Return to Menu" );
         selection = input.nextInt();
       }
       return selection;
@@ -79,6 +80,7 @@ public class VirtualPetRunner
         Food cupcake = new Food("Cupcake", 1, 2, 2);
         Food broccoli = new Food("Broccoli", 3, -1, 1);
         Food potato = new Food("Potato", 2, 0, 2);
+        Food meds = new Food("Medicine", -1, -1, -1);
         
         // Instantiates Game objects
         Game coinToss = new Game("Coin Toss", 1, 0);
@@ -96,7 +98,16 @@ public class VirtualPetRunner
         int choice = getChoice(input);        
         while (choice != 4)
         {
-            if(choice == 1)
+            if(myPet.getHappinessLevel() == 0) {
+            	System.out.println("Pet is sad :( Make it happy... Or else");
+              	System.out.println(" ");
+            }
+            if(myPet.getEnergyLevel() == 0) {
+            	System.out.println("Pet is eepy...maybe they are going to tactical skip school");
+              	System.out.println(" ");
+            }
+        	
+        	if(choice == 1)
             {
               System.out.println(myPet);
             }
@@ -113,6 +124,10 @@ public class VirtualPetRunner
                   f = broccoli;
                 else if (food == 4)
                   f = potato;
+                else if (food ==5) {
+                	f = meds;
+                	myPet.cure();
+                }
                 if (f != null)
                 {
                   myPet.feed(f);
