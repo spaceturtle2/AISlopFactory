@@ -3,7 +3,7 @@ import java.util.Random;
 
 public class BBB {
 	private static Random generator = new Random();
-	private Worker[] BoxHQ = new Worker [64];
+	private Worker[] BoxHQ = new Worker [22];
 	private static int currentWorkers = 0;
 	
 	public void hire(String t, String n) {
@@ -46,6 +46,7 @@ public class BBB {
 	public static void main(String[] args) {
 		Scanner scan = new Scanner(System.in);
 		BBB company = new BBB();
+		String[][] jobs = {{"Succesfully copy pasted a skyscraper!", "6"},{"Succesfully gaslight someone into believing that the boxes are not boxes!", "41"},{"Destroyed all of spawn!", "1"}};
 		
 		while(true) {
 		System.out.print(">>> ");
@@ -74,18 +75,18 @@ public class BBB {
 			System.out.println(jobType);
 			if (jobType.equals("s")) {
 				price = price * 6;
-				jobTitle = "Succesfully copy pasted a skyscraper!";
-				hoursWorked = 6;
+				jobTitle = jobs[0][0];
+				hoursWorked = Integer.parseInt(jobs[0][1]);
 			}
 			else if (jobType.equals("r")) {
 				price = price * 41;
 				price += (Employee.getPay()*0.5);
-				jobTitle = "Succesfully gaslight someone into believing that the boxes are not boxes!";
-				hoursWorked = 41;
+				jobTitle = jobs[1][0];
+				hoursWorked = Integer.parseInt(jobs[1][1]);
 			}
 			else {
-				jobTitle = "Destroyed all of spawn!";
-				hoursWorked = 1;
+				jobTitle = jobs[2][0];
+				hoursWorked = Integer.parseInt(jobs[2][1]);
 			}
 			System.out.println("\n");
 			System.out.println("Bill!");
