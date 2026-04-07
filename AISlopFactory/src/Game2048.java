@@ -22,31 +22,85 @@ public class Game2048
    
    public void add2ToBoard()
    {
-	  boolean found = false; 
-      while (found == false) {
-	  int row = (int)(Math.random()*boardSize);
-      int col = (int)(Math.random()*boardSize);
-      if (gameBoard[row][col] == 0) {
-    	  gameBoard[row][col] = 2;
-    	  found = true;
-      }
-      }
-      
-   }      
+     int randRow = (int)(Math.random() * boardSize);
+     int randCol = (int)(Math.random() * boardSize);
+     while (gameBoard[randRow][randCol] != 0)
+     {
+       randRow = (int)(Math.random() * boardSize);
+       randCol = (int)(Math.random() * boardSize);
+     }
+     gameBoard[randRow][randCol] = 2;
+   }     
      
    public void moveLeft()
+   { for (int row = 0; row < gameBoard.length; row++)
    {
-      /* To be completed in Activity 3 Part A */
+	      for (int col = 0; col < gameBoard[0].length - 1; col++)
+	      {
+	         if (gameBoard[row][col] == 0)
+	         {
+	            int counter = col + 1;
+	            while (counter < gameBoard[0].length && gameBoard[row][counter] == 0)
+	            {
+	               counter++;
+	            }
+
+	            if (counter < gameBoard[0].length)
+	            {
+	               gameBoard[row][col] = gameBoard[row][counter];
+	               gameBoard[row][counter] = 0;
+	            }
+	         }
+	      }
+	     }
    }
    
    public void moveRight()
    {
-      /* To be completed in Activity 3 Part B */
+	   for (int row = 0; row < gameBoard.length; row++)
+	   {
+		      for (int col = gameBoard[0].length - 1; col >= 0; col--)
+		      {
+		         if (gameBoard[row][col] == 0)
+		         {
+		            int counter = col - 1;
+		            while (counter >= 0 && gameBoard[row][counter] == 0)
+		            {
+		               counter--;
+		            }
+
+		            if (counter >= 0)
+		            {
+		               gameBoard[row][col] = gameBoard[row][counter];
+		               gameBoard[row][counter] = 0;
+		            }
+		         }
+		      }
+		     }
    }
       
    public void moveUp()
    {
-      /* To be completed in Activity 3 Part C */
+	   for (int col = 0; col < gameBoard.length; col++)
+	   {
+		      for (int row = 0; row < boardSize; row++)
+		      {
+		         if (gameBoard[row][col] == 0)
+		         {
+		            int counter = row + 1;
+		            while (counter < boardSize && gameBoard[counter][col] == 0)
+		            {
+		               counter++;
+		            }
+
+		            if (counter < gameBoard[0].length)
+		            {
+		               gameBoard[row][col] = gameBoard[counter][col];
+		               gameBoard[counter][col] = 0;
+		            }
+		         }
+		      }
+		     }
    }
    
    public void moveDown()
@@ -86,7 +140,7 @@ public class Game2048
       System.out.println();
       for (int row = 0; row < gameBoard.length; row++)
       {
-         for (int col = 0; col < gameBoard[0].length; col++)
+         for (int col = 0; col < boardSize; col++)
          {
             if (gameBoard[row][col] == 0)
             {
