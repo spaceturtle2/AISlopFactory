@@ -22,7 +22,16 @@ public class Game2048
    
    public void add2ToBoard()
    {
-      /* To be completed in Activity 2 */
+	  boolean found = false; 
+      while (found == false) {
+	  int row = (int)(Math.random()*boardSize);
+      int col = (int)(Math.random()*boardSize);
+      if (gameBoard[row][col] == 0) {
+    	  gameBoard[row][col] = 2;
+    	  found = true;
+      }
+      }
+      
    }      
      
    public void moveLeft()
